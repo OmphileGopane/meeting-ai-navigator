@@ -80,6 +80,54 @@ export default function RelevanceFilterTabs({
               )}
             </TabsTrigger>
           </TabsList>
+          
+          <TabsContent value="high" className="mt-0 space-y-4">
+            {highRelevance.length > 0 ? (
+              highRelevance.map((meeting) => (
+                <MeetingCard 
+                  key={meeting.id} 
+                  meeting={meeting} 
+                  onStatusChange={handleMeetingStatusChange}
+                />
+              ))
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                No relevant meetings found.
+              </div>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="medium" className="mt-0 space-y-4">
+            {mediumRelevance.length > 0 ? (
+              mediumRelevance.map((meeting) => (
+                <MeetingCard 
+                  key={meeting.id} 
+                  meeting={meeting} 
+                  onStatusChange={handleMeetingStatusChange}
+                />
+              ))
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                No optional meetings found.
+              </div>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="low" className="mt-0 space-y-4">
+            {lowRelevance.length > 0 ? (
+              lowRelevance.map((meeting) => (
+                <MeetingCard 
+                  key={meeting.id} 
+                  meeting={meeting} 
+                  onStatusChange={handleMeetingStatusChange}
+                />
+              ))
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                No meetings marked as 'Not Applicable'.
+              </div>
+            )}
+          </TabsContent>
         </Tabs>
         <Button 
           variant="outline" 
@@ -91,54 +139,6 @@ export default function RelevanceFilterTabs({
           <RefreshCw className="h-4 w-4" />
         </Button>
       </div>
-      
-      <TabsContent value="high" className="mt-0 space-y-4">
-        {highRelevance.length > 0 ? (
-          highRelevance.map((meeting) => (
-            <MeetingCard 
-              key={meeting.id} 
-              meeting={meeting} 
-              onStatusChange={handleMeetingStatusChange}
-            />
-          ))
-        ) : (
-          <div className="text-center py-8 text-muted-foreground">
-            No relevant meetings found.
-          </div>
-        )}
-      </TabsContent>
-      
-      <TabsContent value="medium" className="mt-0 space-y-4">
-        {mediumRelevance.length > 0 ? (
-          mediumRelevance.map((meeting) => (
-            <MeetingCard 
-              key={meeting.id} 
-              meeting={meeting} 
-              onStatusChange={handleMeetingStatusChange}
-            />
-          ))
-        ) : (
-          <div className="text-center py-8 text-muted-foreground">
-            No optional meetings found.
-          </div>
-        )}
-      </TabsContent>
-      
-      <TabsContent value="low" className="mt-0 space-y-4">
-        {lowRelevance.length > 0 ? (
-          lowRelevance.map((meeting) => (
-            <MeetingCard 
-              key={meeting.id} 
-              meeting={meeting} 
-              onStatusChange={handleMeetingStatusChange}
-            />
-          ))
-        ) : (
-          <div className="text-center py-8 text-muted-foreground">
-            No meetings marked as 'Not Applicable'.
-          </div>
-        )}
-      </TabsContent>
     </div>
   );
 }
