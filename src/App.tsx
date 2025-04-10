@@ -10,6 +10,8 @@ import Inbox from "./pages/Inbox";
 import Login from "./pages/Login";
 import MeetingDetail from "./pages/MeetingDetail";
 import NotFound from "./pages/NotFound";
+import Archives from "./pages/Archives";
+import Teams from "./pages/Teams";
 
 const queryClient = new QueryClient();
 
@@ -40,11 +42,12 @@ const App = () => {
               <Route path="/" element={<Dashboard />} />
               <Route path="/inbox" element={<Inbox />} />
               <Route path="/meetings/:id" element={<MeetingDetail />} />
+              <Route path="/archives" element={<Archives />} />
+              <Route path="/teams" element={<Teams />} />
               
               {/* We'll add these pages later */}
               <Route path="/calendar" element={<div className="container py-6"><h1 className="text-3xl font-bold">Calendar View</h1><p className="mt-4">Calendar view is under development</p></div>} />
               <Route path="/past-meetings" element={<div className="container py-6"><h1 className="text-3xl font-bold">Past Meetings</h1><p className="mt-4">Past meetings history will be available soon</p></div>} />
-              <Route path="/teams" element={<div className="container py-6"><h1 className="text-3xl font-bold">My Team</h1><p className="mt-4">Team collaboration features coming soon</p></div>} />
               <Route path="/chats" element={<div className="container py-6"><h1 className="text-3xl font-bold">Chats</h1><p className="mt-4">Chat functionality will be implemented in future updates</p></div>} />
               <Route path="/analytics" element={<div className="container py-6"><h1 className="text-3xl font-bold">Analytics</h1><p className="mt-4">Meeting analytics will be available soon</p></div>} />
               <Route path="/role-settings" element={<div className="container py-6"><h1 className="text-3xl font-bold">Role Settings</h1><p className="mt-4">Configure your role and project settings here (coming soon)</p></div>} />

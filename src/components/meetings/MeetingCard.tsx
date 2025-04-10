@@ -13,9 +13,10 @@ import { formatDate, formatTime } from "@/lib/dateUtils";
 type MeetingCardProps = {
   meeting: Meeting;
   compact?: boolean;
+  onStatusChange?: () => void;
 };
 
-export default function MeetingCard({ meeting, compact = false }: MeetingCardProps) {
+export default function MeetingCard({ meeting, compact = false, onStatusChange }: MeetingCardProps) {
   const [status, setStatus] = useState<'pending' | 'accepted' | 'declined' | 'archived'>(
     meeting.isAccepted ? 'accepted' : 
     meeting.isDeclined ? 'declined' : 
@@ -47,6 +48,11 @@ export default function MeetingCard({ meeting, compact = false }: MeetingCardPro
       title: `Meeting ${action}ed`,
       description: `"${meeting.subject}" has been ${action}ed.`,
     });
+
+    // Notify parent component that status changed
+    if (onStatusChange) {
+      onStatusChange();
+    }
   };
 
   const relevanceClass = `relevance-${meeting.relevanceScore}`;

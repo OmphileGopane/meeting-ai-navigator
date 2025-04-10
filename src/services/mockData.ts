@@ -1,5 +1,5 @@
 
-import { Meeting, RelevanceScore, User } from "@/types";
+import { Meeting, RelevanceScore, User, TeamMember } from "@/types";
 
 // Mock current user
 export const currentUser: User = {
@@ -10,6 +10,46 @@ export const currentUser: User = {
   teams: ["API Governance", "Integration"],
   projects: ["Gateway Modernization", "API Security"],
 };
+
+// Mock team members
+export const teamMembers: TeamMember[] = [
+  {
+    id: "tm1",
+    name: "Sarah Chen",
+    email: "sarah.chen@company.com",
+    role: "API Architect",
+    avatar: "SC",
+    status: "online",
+    teams: ["API Governance"],
+  },
+  {
+    id: "tm2",
+    name: "James Wilson",
+    email: "james.wilson@company.com",
+    role: "Senior Backend Developer",
+    avatar: "JW",
+    status: "away",
+    teams: ["Integration"],
+  },
+  {
+    id: "tm3",
+    name: "Michael Rodriguez",
+    email: "michael.rodriguez@company.com",
+    role: "Security Engineer",
+    avatar: "MR",
+    status: "offline",
+    teams: ["API Security"],
+  },
+  {
+    id: "tm4",
+    name: "Jennifer Park",
+    email: "jennifer.park@company.com",
+    role: "Product Manager",
+    avatar: "JP",
+    status: "online",
+    teams: ["API Governance", "Product"],
+  },
+];
 
 // Mock meetings data with relevance scoring
 export const meetings: Meeting[] = [
@@ -113,6 +153,39 @@ export const getMeeting = (id: string): Meeting | undefined => {
   return meetings.find(m => m.id === id);
 };
 
+// Get meetings by status
+export const getMeetingsByStatus = (status: { 
+  isAccepted?: boolean, 
+  isDeclined?: boolean, 
+  isArchived?: boolean 
+}): Meeting[] => {
+  return meetings.filter(meeting => {
+    let match = true;
+    
+    if (status.isAccepted !== undefined) {
+      match = match && meeting.isAccepted === status.isAccepted;
+    }
+    
+    if (status.isDeclined !== undefined) {
+      match = match && meeting.isDeclined === status.isDeclined;
+    }
+    
+    if (status.isArchived !== undefined) {
+      match = match && meeting.isArchived === status.isArchived;
+    }
+    
+    return match;
+  });
+};
+
+// Get team members by team
+export const getTeamMembersByTeam = (team?: string): TeamMember[] => {
+  if (!team) {
+    return teamMembers;
+  }
+  return teamMembers.filter(member => member.teams.includes(team));
+};
+
 // Update meeting status
 export const updateMeetingStatus = (id: string, status: { isAccepted?: boolean, isDeclined?: boolean, isArchived?: boolean }) => {
   const index = meetings.findIndex(m => m.id === id);
@@ -126,4 +199,42 @@ export const updateMeetingStatus = (id: string, status: { isAccepted?: boolean, 
   }
   
   return undefined;
+};
+
+// Restore archived meeting
+export const restoreArchivedMeeting = (id: string) => {
+  const index = meetings.findIndex(m => m.id === id);
+  
+  if (index !== -1 && meetings[index].isArchived) {
+    meetings[index] = {
+      ...meetings[index],
+      isArchived: false
+    };
+    return meetings[index];
+  }
+  
+  return undefined;
+};
+
+// Calculate stats
+export const getStats = () => {
+  const totalMeetings = meetings.length;
+  const acceptedMeetings = meetings.filter(m => m.isAccepted).length;
+  const declinedMeetings = meetings.filter(m => m.isDeclined).length;
+  const pendingMeetings = meetings.filter(m => !m.isAccepted && !m.isDeclined && !m.isArchived).length;
+  
+  // Calculate time saved by declining low relevance meetings
+  const declinedMinutes = meetings
+    .filter(m => m.isDeclined)
+    .reduce((total, meeting) => total + meeting.duration, 0);
+  
+  const timeSaved = Math.round(declinedMinutes / 60);
+
+  return {
+    totalMeetings,
+    acceptedMeetings,
+    declinedMeetings,
+    pendingMeetings,
+    timeSaved
+  };
 };

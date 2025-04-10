@@ -8,6 +8,16 @@ export type User = {
   projects: string[];
 };
 
+export type TeamMember = {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  avatar: string;
+  status: 'online' | 'offline' | 'away';
+  teams: string[];
+};
+
 export type RelevanceScore = 'high' | 'medium' | 'low';
 
 export type Meeting = {
@@ -26,4 +36,12 @@ export type Meeting = {
   isAccepted?: boolean;
   isDeclined?: boolean;
   isArchived?: boolean;
+};
+
+export type IntegrationProvider = 'microsoft' | 'google' | 'github';
+
+export type ExternalIntegration = {
+  provider: IntegrationProvider;
+  isConnected: boolean;
+  lastSynced?: Date;
 };

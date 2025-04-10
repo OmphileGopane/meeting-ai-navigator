@@ -1,7 +1,8 @@
 
+import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Bell, Calendar, LogOut, Mail, Search, Settings, User } from "lucide-react";
+import { Bell, Calendar, LogOut, Mail, RefreshCw, Search, Settings, User, X } from "lucide-react";
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -11,15 +12,94 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { currentUser } from "@/services/mockData";
+import { 
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 
-export default function Header() {
+type Notification = {
+  id: string;
+  title: string;
+  description: string;
+  timestamp: Date;
+  read: boolean;
+};
+
+export default function Header({ onRefresh }: { onRefresh?: () => void }) {
   const { toast } = useToast();
-
-  const handleNotification = () => {
-    toast({
+  const [notifications, setNotifications] = useState<Notification[]>([
+    {
+      id: "1",
       title: "New meeting request",
       description: "You have a new meeting request from Sarah Chen",
+      timestamp: new Date(),
+      read: false
+    },
+    {
+      id: "2",
+      title: "Meeting updated",
+      description: "API Gateway Performance Review meeting time has changed",
+      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+      read: false
+    }
+  ]);
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  const handleNotification = () => {
+    const newNotification = {
+      id: Date.now().toString(),
+      title: "New meeting request",
+      description: "You have a new meeting request from Sarah Chen",
+      timestamp: new Date(),
+      read: false
+    };
+    
+    setNotifications(prev => [newNotification, ...prev]);
+    
+    toast({
+      title: newNotification.title,
+      description: newNotification.description,
     });
+  };
+
+  const markAsRead = (id: string) => {
+    setNotifications(prev => 
+      prev.map(notification => 
+        notification.id === id 
+          ? { ...notification, read: true } 
+          : notification
+      )
+    );
+  };
+
+  const markAllAsRead = () => {
+    setNotifications(prev => 
+      prev.map(notification => ({ ...notification, read: true }))
+    );
+  };
+
+  const deleteNotification = (id: string) => {
+    setNotifications(prev => 
+      prev.filter(notification => notification.id !== id)
+    );
+  };
+
+  const clearAllNotifications = () => {
+    setNotifications([]);
+  };
+
+  const handleRefresh = () => {
+    if (onRefresh) {
+      onRefresh();
+      toast({
+        title: "Refreshed",
+        description: "Your data has been refreshed.",
+      });
+    }
   };
 
   return (
@@ -39,10 +119,88 @@ export default function Header() {
         </div>
 
         <div className="flex items-center space-x-4">
-          <Button variant="ghost" size="icon" onClick={handleNotification}>
-            <Bell className="h-5 w-5" />
+          <Button variant="ghost" size="icon" onClick={handleRefresh} title="Refresh data">
+            <RefreshCw className="h-5 w-5" />
           </Button>
-          <Button variant="ghost" size="icon">
+          
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="icon" className="relative">
+                <Bell className="h-5 w-5" />
+                {unreadCount > 0 && (
+                  <Badge className="absolute -top-1 -right-1 px-1.5 py-0.5 min-w-[1.25rem] h-5 flex items-center justify-center">
+                    {unreadCount}
+                  </Badge>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80 p-0" align="end">
+              <div className="flex items-center justify-between p-4 border-b">
+                <h4 className="font-semibold">Notifications</h4>
+                <div className="flex items-center gap-2">
+                  {notifications.length > 0 && (
+                    <>
+                      <Button variant="ghost" size="sm" onClick={markAllAsRead}>
+                        Mark all read
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={clearAllNotifications}>
+                        Clear all
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
+              <ScrollArea className="h-[300px]">
+                {notifications.length > 0 ? (
+                  <div className="divide-y">
+                    {notifications.map((notification) => (
+                      <div 
+                        key={notification.id} 
+                        className={`p-4 flex gap-3 items-start relative ${notification.read ? 'opacity-70' : ''}`}
+                      >
+                        <div className={`mt-1 h-2 w-2 rounded-full flex-shrink-0 ${notification.read ? 'bg-muted' : 'bg-primary'}`} />
+                        <div className="flex-1">
+                          <div className="font-medium">{notification.title}</div>
+                          <p className="text-sm text-muted-foreground">{notification.description}</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {notification.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </p>
+                        </div>
+                        <div className="flex gap-1">
+                          {!notification.read && (
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-6 w-6" 
+                              onClick={() => markAsRead(notification.id)}
+                            >
+                              <span className="sr-only">Mark as read</span>
+                              <Mail className="h-3 w-3" />
+                            </Button>
+                          )}
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-6 w-6" 
+                            onClick={() => deleteNotification(notification.id)}
+                          >
+                            <span className="sr-only">Delete</span>
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-4 text-center text-muted-foreground">
+                    No notifications
+                  </div>
+                )}
+              </ScrollArea>
+            </PopoverContent>
+          </Popover>
+
+          <Button variant="ghost" size="icon" onClick={handleNotification}>
             <Calendar className="h-5 w-5" />
           </Button>
           <Button variant="ghost" size="icon">

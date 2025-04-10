@@ -1,9 +1,10 @@
+
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, FileText, MapPin, RotateCcw, Share, Trash2, User, Users } from "lucide-react";
+import { Calendar, Clock, FileText, MapPin, RefreshCw, RotateCcw, Share, Trash2, User, Users } from "lucide-react";
 import { Meeting } from "@/types";
-import { getMeeting, updateMeetingStatus } from "@/services/mockData";
+import { getMeeting, updateMeetingStatus, restoreArchivedMeeting } from "@/services/mockData";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,18 +17,35 @@ export default function MeetingDetail() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  useEffect(() => {
+  const loadMeeting = () => {
     if (id) {
+      setLoading(true);
       const fetchedMeeting = getMeeting(id);
       if (fetchedMeeting) {
         setMeeting(fetchedMeeting);
       }
       setLoading(false);
     }
+  };
+
+  useEffect(() => {
+    loadMeeting();
   }, [id]);
 
-  const handleAction = (action: 'accept' | 'decline' | 'archive') => {
+  const handleAction = (action: 'accept' | 'decline' | 'archive' | 'restore') => {
     if (!meeting) return;
+    
+    if (action === 'restore') {
+      const updatedMeeting = restoreArchivedMeeting(meeting.id);
+      if (updatedMeeting) {
+        setMeeting(updatedMeeting);
+        toast({
+          title: "Meeting restored",
+          description: `"${meeting.subject}" has been restored from archives.`,
+        });
+      }
+      return;
+    }
     
     const newStatus = {
       isAccepted: action === 'accept' ? true : false,
@@ -50,10 +68,18 @@ export default function MeetingDetail() {
     }
   };
 
+  const handleRefresh = () => {
+    loadMeeting();
+    toast({
+      title: "Meeting details refreshed",
+      description: "The meeting information has been refreshed."
+    });
+  };
+
   if (loading) {
     return (
       <div className="container py-12 flex justify-center">
-        <div className="animate-pulse-slow">Loading meeting details...</div>
+        <div className="animate-pulse">Loading meeting details...</div>
       </div>
     );
   }
@@ -110,48 +136,65 @@ export default function MeetingDetail() {
           </div>
         </div>
         
-        {isActionable && (
-          <div className="flex space-x-2 mt-4 md:mt-0">
-            <Button 
-              variant="outline" 
-              onClick={() => handleAction('decline')}
-            >
-              Decline
-            </Button>
-            <Button 
-              onClick={() => handleAction('accept')}
-            >
-              Accept
-            </Button>
-          </div>
-        )}
-        
-        {meeting.isAccepted && (
-          <div className="flex space-x-2 mt-4 md:mt-0">
+        <div className="flex space-x-2 mt-4 md:mt-0">
+          <Button 
+            variant="outline" 
+            onClick={handleRefresh}
+            size="icon"
+            title="Refresh meeting details"
+          >
+            <RefreshCw className="h-4 w-4" />
+          </Button>
+          
+          {isActionable && (
+            <>
+              <Button 
+                variant="outline" 
+                onClick={() => handleAction('decline')}
+              >
+                Decline
+              </Button>
+              <Button 
+                onClick={() => handleAction('accept')}
+              >
+                Accept
+              </Button>
+            </>
+          )}
+          
+          {meeting.isAccepted && (
             <Button 
               variant="outline" 
               onClick={() => handleAction('decline')}
             >
               Cancel Attendance
             </Button>
-          </div>
-        )}
-        
-        {meeting.isDeclined && !meeting.isArchived && (
-          <div className="flex space-x-2 mt-4 md:mt-0">
+          )}
+          
+          {meeting.isDeclined && !meeting.isArchived && (
+            <>
+              <Button 
+                variant="outline" 
+                onClick={() => handleAction('archive')}
+              >
+                Archive
+              </Button>
+              <Button 
+                onClick={() => handleAction('accept')}
+              >
+                Accept
+              </Button>
+            </>
+          )}
+          
+          {meeting.isArchived && (
             <Button 
-              variant="outline" 
-              onClick={() => handleAction('archive')}
+              onClick={() => handleAction('restore')}
             >
-              Archive
+              Restore from Archive
             </Button>
-            <Button 
-              onClick={() => handleAction('accept')}
-            >
-              Accept
-            </Button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -257,7 +300,7 @@ export default function MeetingDetail() {
               <div className="space-y-2">
                 <Button variant="outline" className="w-full justify-start">
                   <Share className="mr-2 h-4 w-4" />
-                  Forward Meeting
+                  Share Meeting
                 </Button>
                 <Button variant="outline" className="w-full justify-start">
                   <RotateCcw className="mr-2 h-4 w-4" />
@@ -271,6 +314,16 @@ export default function MeetingDetail() {
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
                     Archive Meeting
+                  </Button>
+                )}
+                {meeting.isArchived && (
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start"
+                    onClick={() => handleAction('restore')}
+                  >
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Restore from Archive
                   </Button>
                 )}
               </div>
