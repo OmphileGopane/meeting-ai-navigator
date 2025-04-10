@@ -1,11 +1,10 @@
-
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, FileText, MapPin, RotateCcw, Share, Trash2, User, Users } from "lucide-react";
 import { Meeting } from "@/types";
 import { getMeeting, updateMeetingStatus } from "@/services/mockData";
-import { useToast } from "@/components/ui/toast";
+import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatDateTime } from "@/lib/dateUtils";
@@ -100,8 +99,8 @@ export default function MeetingDetail() {
           <div className="flex items-center mt-2">
             <Badge 
               variant={
-                meeting.relevanceScore === "high" ? "success" : 
-                meeting.relevanceScore === "medium" ? "warning" : "destructive"
+                meeting.relevanceScore === "high" ? "default" : 
+                meeting.relevanceScore === "medium" ? "secondary" : "destructive"
               }
               className="mr-2"
             >
@@ -229,8 +228,8 @@ export default function MeetingDetail() {
                 <h3 className="text-sm font-medium text-muted-foreground mb-1">RELEVANCE SCORE</h3>
                 <Badge 
                   variant={
-                    meeting.relevanceScore === "high" ? "success" : 
-                    meeting.relevanceScore === "medium" ? "warning" : "destructive"
+                    meeting.relevanceScore === "high" ? "default" : 
+                    meeting.relevanceScore === "medium" ? "secondary" : "destructive"
                   }
                   className="text-xs capitalize mb-4"
                 >

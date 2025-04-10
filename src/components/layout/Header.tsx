@@ -1,5 +1,5 @@
 
-import { useToast } from "@/components/ui/toast";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Bell, Calendar, LogOut, Mail, Search, Settings, User } from "lucide-react";
 import { 

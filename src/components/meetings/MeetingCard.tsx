@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, MapPin, Users } from "lucide-react";
-import { useToast } from "@/components/ui/toast";
+import { useToast } from "@/hooks/use-toast";
 import { updateMeetingStatus } from "@/services/mockData";
 import { formatDate, formatTime } from "@/lib/dateUtils";
 
@@ -59,8 +59,8 @@ export default function MeetingCard({ meeting, compact = false }: MeetingCardPro
           <h3 className={`font-semibold ${compact ? "text-sm" : "text-base"}`}>{meeting.subject}</h3>
           <Badge 
             variant={
-              meeting.relevanceScore === "high" ? "success" : 
-              meeting.relevanceScore === "medium" ? "warning" : "destructive"
+              meeting.relevanceScore === "high" ? "default" : 
+              meeting.relevanceScore === "medium" ? "secondary" : "destructive"
             }
             className="text-xs capitalize ml-2"
           >
