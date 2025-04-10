@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Bell, Calendar, LogOut, Mail, RefreshCw, Search, Settings, User, X } from "lucide-react";
+import { Bell, Calendar, LogOut, Mail, RefreshCw, Search, Settings, User, X, Eye } from "lucide-react";
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { Link } from "react-router-dom";
 
 type Notification = {
   id: string;
@@ -26,6 +27,7 @@ type Notification = {
   description: string;
   timestamp: Date;
   read: boolean;
+  link?: string;
 };
 
 export default function Header({ onRefresh }: { onRefresh?: () => void }) {
@@ -36,16 +38,20 @@ export default function Header({ onRefresh }: { onRefresh?: () => void }) {
       title: "New meeting request",
       description: "You have a new meeting request from Sarah Chen",
       timestamp: new Date(),
-      read: false
+      read: false,
+      link: "/meetings/new-meeting-1"
     },
     {
       id: "2",
       title: "Meeting updated",
       description: "API Gateway Performance Review meeting time has changed",
       timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-      read: false
+      read: false,
+      link: "/meetings/api-review"
     }
   ]);
+  
+  const [unreadChats, setUnreadChats] = useState(3);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -55,14 +61,34 @@ export default function Header({ onRefresh }: { onRefresh?: () => void }) {
       title: "New meeting request",
       description: "You have a new meeting request from Sarah Chen",
       timestamp: new Date(),
-      read: false
+      read: false,
+      link: "/meetings/new-request"
     };
     
     setNotifications(prev => [newNotification, ...prev]);
     
     toast({
       title: newNotification.title,
-      description: newNotification.description,
+      description: (
+        <div className="flex flex-col">
+          <p>{newNotification.description}</p>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="mt-2 w-full flex items-center gap-2"
+            onClick={() => {
+              toast({
+                title: "Viewing message",
+                description: "Opening meeting request details"
+              });
+              window.location.href = newNotification.link || "#";
+            }}
+          >
+            <Eye className="h-4 w-4" />
+            View Details
+          </Button>
+        </div>
+      )
     });
   };
 
@@ -102,11 +128,19 @@ export default function Header({ onRefresh }: { onRefresh?: () => void }) {
     }
   };
 
+  const viewChat = () => {
+    toast({
+      title: "Opening Chat",
+      description: "Redirecting to chat interface",
+    });
+    setUnreadChats(0);
+  };
+
   return (
     <header className="bg-white dark:bg-slate-900 border-b py-4 px-6 sticky top-0 z-30">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <div className="font-bold text-xl text-primary">MeetingAI</div>
+          <div className="font-bold text-xl text-primary">RoleCall</div>
           <span className="text-xs bg-secondary px-2 py-0.5 rounded-md">Navigator</span>
         </div>
 
@@ -136,7 +170,7 @@ export default function Header({ onRefresh }: { onRefresh?: () => void }) {
             </PopoverTrigger>
             <PopoverContent className="w-80 p-0" align="end">
               <div className="flex items-center justify-between p-4 border-b">
-                <h4 className="font-semibold">Notifications</h4>
+                <h4 className="font-semibold text-primary">Notifications</h4>
                 <div className="flex items-center gap-2">
                   {notifications.length > 0 && (
                     <>
@@ -165,6 +199,20 @@ export default function Header({ onRefresh }: { onRefresh?: () => void }) {
                           <p className="text-xs text-muted-foreground mt-1">
                             {notification.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </p>
+                          {notification.link && (
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="mt-2 w-full flex items-center gap-2"
+                              asChild
+                              onClick={() => markAsRead(notification.id)}
+                            >
+                              <Link to={notification.link}>
+                                <Eye className="h-3.5 w-3.5" />
+                                View
+                              </Link>
+                            </Button>
+                          )}
                         </div>
                         <div className="flex gap-1">
                           {!notification.read && (
@@ -203,8 +251,22 @@ export default function Header({ onRefresh }: { onRefresh?: () => void }) {
           <Button variant="ghost" size="icon" onClick={handleNotification}>
             <Calendar className="h-5 w-5" />
           </Button>
-          <Button variant="ghost" size="icon">
-            <Mail className="h-5 w-5" />
+          
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="relative" 
+            onClick={viewChat}
+            asChild
+          >
+            <Link to="/chats">
+              <Mail className="h-5 w-5" />
+              {unreadChats > 0 && (
+                <Badge className="absolute -top-1 -right-1 px-1.5 py-0.5 min-w-[1.25rem] h-5 flex items-center justify-center">
+                  {unreadChats}
+                </Badge>
+              )}
+            </Link>
           </Button>
           
           <DropdownMenu>
